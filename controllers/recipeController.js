@@ -1,94 +1,111 @@
-const recipeData = require("../data/recipes");
+// const recipeData = require("../data/recipes");
+const Recipe = require("../models/recipeModel");
 
 const getAllRecipes = async (request, response, next) => {
     try {
-        const recipes = recipeData;
+        // const recipes = recipeData;
+        const recipes = await Recipe.find({});
         return response.status(200).json({
             success: {message: "This route shows all the recipes."},
-            data: {recipes: recipes},
-            statusCode: 200,
+            data: {recipes},
         })
     } catch (error) {
-        return response.status(400).json({
-            error: {message: "There was a problem retrieving the recipes."}
-        });
+        return next(error)
     };
     
 };
 
 const getRecipe = async (request, response, next) => {
-    const {id} = request.params;
+    const {_id} = request.params;
 
     try {
-        const foundRecipe = recipeData.find((recipe) => recipe.id === id);
+        // const foundRecipe = recipeData.find((recipe) => recipe.id === id);
+        if (!_id) {
+            throw new Error("ID required.")
+        }
+        const recipe = await Recipe.findById(_id)
+        if (!recipe) {
+            throw new Error("Recipe not found")
+        }
         return response.status(200).json({
-            success: {message: "This page shows recipe by ID"},
-            data: {data: foundRecipe},
-            statusCode: 200,
+            success: {message: "Found recipe by ID"},
+            data: {recipe},
         })
-    } catch (erro) {
-        response.status(400).json({
-            error: {message: "Error locating book by ID"},
-            statusCode: 400,
-        });
+    } catch (error) {
+        return next(error)
     };
 };
 
 const createRecipe = async (request, response, next) => {
     const {name, prepTime, cookTime, ingredients, instructions, notes} = request.body;
-    const newRecipe = {
-        name, 
-        prepTime, 
-        cookTime, 
-        ingredients, 
-        instructions, 
-        notes,
-    }
+    
     try {
+        if (!name || !prepTime || !cookTime || !ingredients || !instructions || !imageUrl) {
+            throw new Error("Please enter missing fields.")
+        }
+        const newRecipe = await new Recipe({
+            name, 
+            prepTime, 
+            cookTime, 
+            ingredients, 
+            instructions, 
+            notes,
+            imageUrl,
+        });
+        await newRecipe.save();
         return response.status(201).json({
             success: {message: "Cooked up a new recipe!"},
             data: {newRecipe},
             statusCode: 201,
         })
     } catch (error) {
-        return response.status(400).json({
-            error: {message: "There was a problem creating a new recipe."},
-            statusCode: 400,
-        });
+        return next(error)
     };
 };
 
 const updateRecipe = async (request, response, next) => {
-    const {id} = request.params;
+    const {_id} = request.params;
     const {name, prepTime, cookTime, ingredients, instructions, notes} = request.body;
 
     try {
-        const updatedRecipe = {
-        name,
-        prepTime,
-        cookTime,
-        ingredients,
-        instructions,
-        notes,
-    }
+        if(!name || !prepTime || !cookTime || !ingredients || !instructions || !imageUrl) {
+            throw new Error("Please enter the missing fields.")
+        }
+        const updatedRecipe = await Recipe.findByIdAndUpdate(_id,
+            {
+                $set:{
+                  name,
+                  prepTime,
+                  cookTime,
+                  ingredients,
+                  instructions,
+                  notes,
+                },
+            },
+            {new: true}
+            );
+        if (!upatedRecipe) {
+            throw new Error("Recipe not updated.")
+        }
+        
         return response.status(201).json({
             success: {message: "Updated recipe successsfully"},
             data: {updatedRecipe},
-            statusCode: 201,
     })
     } catch (error) {
-        return response.status(400).json({
-            error: {message: "There was a problem updating recipe "},
-            statusCode: 400,
-        });
+        return new(error)
     };
 };
 
-const deleteRecipe = async(response, response, next) => {
-    const {id} = request.params;
+const deleteRecipe = async(request, response, next) => {
+    const {_id} = request.params;
 
     try {
-        const recipe = recipeData.filter((recipe) => recipe.id !== id)
+       if (!_id) {
+        throw new Error("ID required.")
+       }
+        // const recipe = recipeData.filter((recipe) => recipe.id !== id)
+        await Recipe.findByIdAndDelete(id);
 
         return response.status(200).json({
             success: {message: "The recipe has been chopped."},
@@ -96,10 +113,7 @@ const deleteRecipe = async(response, response, next) => {
             statusCode: 200,
         })
     } catch (error) {
-        return response.status(400).json({
-            error: {message: "There was a problem deleting the recipe."},
-            statusCode: 400,
-        })
+        return next(error)
     }
 }
 

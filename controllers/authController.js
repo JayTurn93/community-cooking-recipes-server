@@ -1,5 +1,49 @@
 const { request, response } = require("express");
+const bcrypt = require("../models/userModel")
 
+const register = async (request, response, next) => {
+    const {firstName, lastName, userName, password} = request.body;
+    console.log(firstName, lastName, userName, password);
+    bcrypt.hash(password, 10, async (error, hashedPassword) => {
+        if (error) {
+            return next(error);
+        }
+        const newUser = new User({
+            firstName,
+            lastName,
+            userName,
+            password,
+        });
+        try {
+            await newUser.save();
+            request.login(newUser, (error) => {
+                if (error) {
+                    response.status(400).json({
+                        error: {message: "Something went wrong signing in."},
+                        statusCode: 400,
+                    });
+                }
+            });
+            response.status(201).json({
+                success: {message: "Cooked up a new user."},
+                data: {firstName, lastName, username},
+                statusCode: 201
+            });
+        } catch (error) {
+            if (error.code === 11000 && error.keyPattern.username) {
+                response.status(400).json({
+                    error: {message: "Username already exist."},
+                    statusCode: 400,
+                });
+            } else {
+              response.status(500).json({
+              error: {message: "Internal server error"},
+              statusCode: 500
+             });
+            }
+        };
+    });
+};
 
 const login = async (request, response, next) => {
     try {
@@ -47,29 +91,6 @@ const logout = async (request, response, next) => {
     };
 };
 
-const register = async (request, response, next) => {
-    const {firstName, lastName, userName, password} = request.body;
-    console.log(firstName, lastName, userName, password);
 
-    try {
-        const newUser = {
-            firstName,
-            lastName,
-            userName,
-            password,
-        };
-        console.log("We're cooking")
-        response.status(201).json({
-            success: {message: "Cooked up a new user."},
-            data: {newUser},
-            statusCode: 201
-        });
-    } catch (error) {
-        response.status(500).json({
-            error: {message: "Internal server error"},
-            statusCode: 500
-        });
-    };
-};
 
 module.exports = { register, logout, localLogin, login };
