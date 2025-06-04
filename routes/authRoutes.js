@@ -7,7 +7,12 @@ const { login, localLogin, logout, register } = require("../controllers/authCont
 
 router.post("/register", register);
 router.get("/login/local", localLogin);
-router.get("/login", login);
+router.post("/login", 
+    passport.authenticate("local", {
+        failureRedirect: "/login/error",
+        failureMessage: true,
+      }),
+    login);
 router.get("/login/error", (request, response, next) => {
     return response.status(400).json({
         message: "Login error"
