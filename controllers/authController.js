@@ -1,34 +1,47 @@
 const { request, response } = require("express");
-const bcrypt = require("../models/userModel")
+const passport = require("passport");
+const bcrypt = require("../models/userModel");
+const User = require("../models/userModel");
+
 
 const register = async (request, response, next) => {
-    const {firstName, lastName, userName, password} = request.body;
-    console.log(firstName, lastName, userName, password);
-    bcrypt.hash(password, 10, async (error, hashedPassword) => {
-        if (error) {
-            return next(error);
-        }
-        const newUser = new User({
-            firstName,
-            lastName,
-            userName,
-            password,
-        });
+    const {firstName, lastName, usenName, password, googleId, githubId} = request.body;
+    console.log(request.body);
+    if (error) {
+        return next(error);
+    } else if (!firstName || !username || !password) {
+        return response.status(400).json({
+            error: {message: "Missing required fields."},
+            statusCode: 400,
+        })
+    }
         try {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            const newUser = {
+                firstName: firstName,
+                lastName: lastName,
+                username: username,
+                password: hashedPassword,
+                googleId: goodleId,
+                githubId: githubId,
+            };
+        
             await newUser.save();
+
             request.login(newUser, (error) => {
                 if (error) {
-                    response.status(400).json({
-                        error: {message: "Something went wrong signing in."},
-                        statusCode: 400,
-                    });
+                    return next(error);
                 }
-            });
-            response.status(201).json({
-                success: {message: "Cooked up a new user."},
-                data: {firstName, lastName, username},
-                statusCode: 201
-            });
+                
+                newUser.password = undefined;
+
+                return response.status(201).json({
+                    success: {message: "Cooked up a new user."},
+                    data: {newUser},
+                    statusCode: 201
+                });
+            })
+            
         } catch (error) {
             if (error.code === 11000 && error.keyPattern.username) {
                 response.status(400).json({
@@ -42,8 +55,8 @@ const register = async (request, response, next) => {
              });
             }
         };
-    });
-};
+    };
+
 
 const login = async (request, response, next) => {
     try {
@@ -60,35 +73,45 @@ const login = async (request, response, next) => {
 };
 
 const localLogin = async (request, response, next) => {
-    const result = true;
+    const userCopy = { ...request.user._doc };
+    userCopy.password = undefined;
 
-    function mockPassport(error, user) {
+    passport.authenticate("local", (error, user, info) => {
         if (error) {
-            return next(error);
+            return next (error)
+        };
+        if (!user) {
+            return response.status(401).json({
+                error: {message: "There is no user detected. Try again"},
+            });
         }
-    }
-    mockPassport();
-    return response.json({
-        success: {message: "Login successful."}
+        const userCopy = {...request.user._doc};
+        userCopy.password = undefined;
+        console.log(userCopy);
+        response.status(200).json({
+            success: {message: "Local Login Served!"},
+            data: {user: userCopy},
+            statusCode: 200,
+        });
     })
 };
 
 const logout = async (request, response, next) => {
-    console.log("intializing logout controller");
-    console.log("session destroyed");
-    response.clearCookie("connect.sid");
-
-    return response.status(200).json({
-        success: {message: "User logged out."},
-        statusCode: 200,
-    });
-    function sessionDestruction (error) {
+    request.logout((error) => {
         if (error) {
             return next(error);
         };
-    sessionDestruction();
-    console.log("logout function activated")
-    };
+        request.session.destroy((error) => {
+            if (error) {
+                return next(error);
+            }
+        })
+        response.clearCookie("connect.sid");
+        return response.status(200).json({
+            success: {message: "User logged out!"},
+            statusCode: 200,
+        })
+    })
 };
 
 
