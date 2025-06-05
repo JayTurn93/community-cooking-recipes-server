@@ -14,7 +14,7 @@ const recipeRoutes = require("./routes/recipeRoutes");
 const app = express();
 const PORT = process.env.PORT || "8080"
 //-------------MIDDLEWARE---------------
-app.use(helmet());
+app.use(helmet({contentSecurityPolicy: false}));
 app.use(morgan("dev"));
 app.use(cors({ credentials: true, origin: true}));
 app.use(express.json());
@@ -29,7 +29,7 @@ app.use(
     secret: process.env.SECRET_KEY,
     cookie: {
       httpOnly: true,
-      secure: true,
+      secure: false, //change to true for deployment
       maxAge: 1000 * 60 * 60 * 24,
     }
   })

@@ -6,7 +6,7 @@ const router = express.Router();
 const { login, localLogin, logout, register } = require("../controllers/authController");
 
 router.post("/register", register);
-router.get("/login/local", localLogin);
+router.post("/login/local", localLogin);
 router.post("/login", 
     passport.authenticate("local", {
         failureRedirect: "/login/error",
@@ -18,7 +18,7 @@ router.get("/login/error", (request, response, next) => {
         message: "Login error"
     });
 });
-router.get("/logout", logout);
+router.post("/logout", logout);
 router.get("/unauthenticated", (request, response, next) => {
     console.log("Returning to homepage");
     response.redirect("/");
