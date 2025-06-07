@@ -12,7 +12,7 @@ const passport = require("passport");
 const authRoutes = require("./routes/authRoutes");
 const recipeRoutes = require("./routes/recipeRoutes");
 const app = express();
-const PORT = process.env.PORT || "8080"
+const PORT = process.env.PORT || "4000"
 //-------------MIDDLEWARE---------------
 app.use(helmet({contentSecurityPolicy: false}));
 app.use(morgan("dev"));
