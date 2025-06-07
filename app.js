@@ -29,7 +29,7 @@ app.use(
     secret: process.env.SECRET_KEY,
     cookie: {
       httpOnly: true,
-      secure: false, //change to true for deployment
+      secure: true, //change to true for deployment
       maxAge: 1000 * 60 * 60 * 24,
     }
   })
