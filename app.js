@@ -9,8 +9,7 @@ const cors = require("cors");
 const session = require("express-session");
 const passport = require("passport");
 
-const authRoutes = require("./routes/authRoutes");
-const recipeRoutes = require("./routes/recipeRoutes");
+
 const app = express();
 const PORT = process.env.PORT || "4000"
 //-------------MIDDLEWARE---------------
@@ -20,8 +19,10 @@ app.use(cors({ credentials: true, origin: true}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname + "/public")));
-
+const authRoutes = require("./routes/authRoutes");
+const recipeRoutes = require("./routes/recipeRoutes");
 //------------SESSION MANAGEMENT----------
+
 app.use(
   session({
     resave: false,
