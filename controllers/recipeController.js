@@ -40,7 +40,7 @@ const createRecipe = async (request, response, next) => {
     const {name, prepTime, cookTime, ingredients, instructions, notes} = request.body;
     
     try {
-        if (!name || !prepTime || !cookTime || !ingredients || !instructions || !imageUrl) {
+        if (!name || !prepTime || !cookTime || !ingredients || !instructions) {
             throw new Error("Please enter missing fields.")
         }
         const newRecipe = await new Recipe({
@@ -50,7 +50,6 @@ const createRecipe = async (request, response, next) => {
             ingredients, 
             instructions, 
             notes,
-            imageUrl,
         });
         await newRecipe.save();
         return response.status(201).json({
@@ -68,7 +67,7 @@ const updateRecipe = async (request, response, next) => {
     const {name, prepTime, cookTime, ingredients, instructions, notes} = request.body;
 
     try {
-        if(!name || !prepTime || !cookTime || !ingredients || !instructions || !imageUrl) {
+        if(!name || !prepTime || !cookTime || !ingredients || !instructions) {
             throw new Error("Please enter the missing fields.")
         }
         const updatedRecipe = await Recipe.findByIdAndUpdate(_id,
