@@ -43,7 +43,7 @@ const createRecipe = async (request, response, next) => {
         if (!name || !prepTime || !cookTime || !ingredients || !instructions) {
             throw new Error("Please enter missing fields.")
         }
-        const newRecipe = await new Recipe({
+        const newRecipe = new Recipe({
             name, 
             prepTime, 
             cookTime, 

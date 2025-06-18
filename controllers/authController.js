@@ -17,14 +17,14 @@ const register = async (request, response, next) => {
     }
         try {
             const hashedPassword = await bcrypt.hash(password, 10);
-            const newUser = new User ({
+            const newUser = {
                 firstName: firstName,
                 lastName: lastName,
                 username: username,
                 password: hashedPassword,
                 googleId: "",
                 githubId: githubId,
-            });
+            };
         
             await newUser.save();
 
