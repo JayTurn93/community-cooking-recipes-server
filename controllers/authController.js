@@ -5,7 +5,7 @@ const User = require("../models/userModel");
 
 
 const register = async (request, response, next) => {
-    const {firstName, lastName, usenName, password, googleId, githubId} = request.body;
+    const {firstName, lastName, username, password, googleId, githubId} = request.body;
     console.log(request.body);
     if (error) {
         return next(error);
