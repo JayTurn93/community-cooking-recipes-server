@@ -22,7 +22,7 @@ const register = async (request, response, next) => {
                 lastName: lastName,
                 username: username,
                 password: hashedPassword,
-                googleId: "",
+                googleId: googleId,
                 githubId: githubId,
             };
         
@@ -37,7 +37,7 @@ const register = async (request, response, next) => {
 
                 return response.status(201).json({
                     success: {message: "Cooked up a new user."},
-                    data: {newUser},
+                    data: {user: newUser},
                     statusCode: 201
                 });
             })
@@ -73,8 +73,8 @@ const login = async (request, response, next) => {
 };
 
 const localLogin = async (request, response, next) => {
-    const userCopy = { ...request.user._doc };
-    userCopy.password = undefined;
+    // const userCopy = { ...request.user._doc };
+    // userCopy.password = undefined;
 
     passport.authenticate("local", (error, user, info) => {
         if (error) {

@@ -104,7 +104,7 @@ const deleteRecipe = async(request, response, next) => {
         throw new Error("ID required.")
        }
         // const recipe = recipeData.filter((recipe) => recipe.id !== id)
-        await Recipe.findByIdAndDelete(id);
+        const recipe = await Recipe.findByIdAndDelete(_id);
 
         return response.status(200).json({
             success: {message: "The recipe has been chopped."},
