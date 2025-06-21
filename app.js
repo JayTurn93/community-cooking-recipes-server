@@ -13,11 +13,11 @@ const passport = require("passport");
 const app = express();
 const PORT = process.env.PORT || "4000"
 //-------------MIDDLEWARE---------------
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(helmet({contentSecurityPolicy: false}));
 app.use(morgan("dev"));
 app.use(cors({ credentials: true, origin: true}));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname + "/public")));
 const authRoutes = require("./routes/authRoutes");
 const recipeRoutes = require("./routes/recipeRoutes");
@@ -42,9 +42,10 @@ app.use("/auth", authRoutes);
 app.use("/api/recipes", recipeRoutes);
 //Error Catch Middleware 
 app.use((error, request, response, next) =>{
+  let condition = error.code === 11000;
   const authErrorStatus = error.status || 400;
   const serverErrorStatus = error.status || 500;
-  if (error.code === 11000) {
+  if (condition) {
     return response.statuse(authErrorStatus).json({
       error: {message: "Already have an account? Try logging in."},
       statusCode: authErrorStatus,

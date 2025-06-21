@@ -1,8 +1,8 @@
 const passport = require("passport");
 const bcrypt = require("bcrypt");
 const LocalStrategy = require("passport-local").Strategy;
-const User = require("../models/userModel");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const User = require("../models/userModel");
 
 passport.use(
   new LocalStrategy (async (username, password, done) => {
@@ -11,12 +11,14 @@ passport.use(
       const user = await User.findOne({username});
       //Error Handling for user
       if (!user) {
-        return done.apply(null, false, {message: "Incorrect name.",});
+        return done(null, false, {message: "Incorrect name.",
+        });
       }
-      const result = bcrypt.compare(password, user.password);
+      const result = await bcrypt.compare(password, user.password);
       //Error handling for password
       if (!result) {
-        return done(null, false, {message: "Incorrect password.",});
+        return done(null, false, {message: "Incorrect password.",
+        });
       }
       return (done(null, user));
     } catch (error) {
@@ -32,9 +34,9 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: "http://localhost:3000/auth/google/callback",
     },
-    async (accessToken, refreshToken, Profiler, done) =>{
+    async (accessToken, refreshToken, profile, done) =>{
       try {
-        const user = await User.findOne({googleId: Profiler.id});
+        const user = await User.findOne({googleId: profile.id});
 
         if (user) {
           return done(null, user);
@@ -62,7 +64,7 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (_id, done) => {
   try {
-    const user = await User.findById(_id)
+    const user = await User.findById(_id);
     done(null, user);
   } catch (error) {
     done(error);

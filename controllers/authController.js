@@ -1,11 +1,11 @@
 const { request, response } = require("express");
 const passport = require("passport");
-const bcrypt = require("../models/userModel");
+const bcrypt = require("bcrypt");
 const User = require("../models/userModel");
 
 
 const register = async (request, response, next) => {
-    const {firstName, lastName, username, password, googleId, githubId} = request.body;
+    const {firstName, lastName, username, password, googleId} = request.body;
     console.log(request.body);
     if (error) {
         return next(error);
@@ -17,14 +17,13 @@ const register = async (request, response, next) => {
     }
         try {
             const hashedPassword = await bcrypt.hash(password, 10);
-            const newUser = {
+            const newUser = await new User ({
                 firstName: firstName,
                 lastName: lastName,
                 username: username,
                 password: hashedPassword,
                 googleId: googleId,
-                githubId: githubId,
-            };
+            });
         
             await newUser.save();
 
@@ -43,39 +42,18 @@ const register = async (request, response, next) => {
             })
             
         } catch (error) {
-            if (error.code === 11000 && error.keyPattern.username) {
-                response.status(400).json({
-                    error: {message: "Username already exist."},
-                    statusCode: 400,
-                });
-            } else {
-              response.status(500).json({
-              error: {message: "Internal server error"},
-              statusCode: 500
-             });
-            }
-        };
+            return next(error)
+        }
     };
 
 
 const login = async (request, response, next) => {
-    try {
-        return response.status(200).json({
-        success: {message: "Login Successfil"},
-        statusCode: 200,
-    });
-    } catch (error) {
-        return response.status(400).json({
-            error: {message: "There was a problem logging in."},
-            statusCode: 400
-        });
-    };
+    response.status(200).json({
+        success: {message: "User logged in."}
+    })
 };
 
 const localLogin = async (request, response, next) => {
-    // const userCopy = { ...request.user._doc };
-    // userCopy.password = undefined;
-
     passport.authenticate("local", (error, user, info) => {
         if (error) {
             return next (error)
@@ -85,13 +63,19 @@ const localLogin = async (request, response, next) => {
                 error: {message: "There is no user detected. Try again"},
             });
         }
-        const userCopy = {...request.user._doc};
-        userCopy.password = undefined;
-        console.log(userCopy);
-        response.status(200).json({
-            success: {message: "Local Login Served!"},
-            data: {user: userCopy},
-            statusCode: 200,
+        request.login(user, (error) => {
+            if (error) {
+                return next(error)
+            }
+            const userCopy = {...request.user._doc};
+            userCopy.password = undefined;
+            console.log(userCopy);
+            response.status(200).json({
+                success: {message: "Local Login Served!"},
+                data: {user: userCopy},
+                statusCode: 200,
+            })
+        
         });
     })
 };
