@@ -5,7 +5,6 @@ const User = require("../models/userModel");
 
 const register = async (request, response, next) => {
   const { firstName, lastName, username, password, googleId } = request.body;
-  console.log(request.body);
   if (!firstName || !username || !password) {
     return response.status(400).json({
       error: { message: "Missing required fields." },
@@ -50,9 +49,9 @@ const login = async (request, response, next) => {
 
 const localLogin = async (request, response, next) => {
   passport.authenticate("local", (error, user, info) => {
-    // if (error) {
-    //   return next(error);
-    // }
+    if (error) {
+      return next(error);
+    }
     if (!user) {
       return response.status(401).json({
         error: { message: "There is no user detected. Try again" },
@@ -64,7 +63,6 @@ const localLogin = async (request, response, next) => {
       }
       const userCopy = { ...request.user._doc };
       userCopy.password = undefined;
-      console.log(userCopy);
       response.status(200).json({
         success: { message: "Local Login Served!" },
         data: { user: userCopy },
