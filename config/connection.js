@@ -6,7 +6,7 @@ async function main() {
     console.log("Database Connected.");
   } catch (error) {
     console.log(`There was an error connectiong to the database ${error}`);
-  };
-};
+  }
+}
 
 main();
