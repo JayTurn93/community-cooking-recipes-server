@@ -24,7 +24,6 @@ router.get("/login/error", (request, response, next) => {
 });
 router.post("/logout", logout);
 router.get("/unauthenticated", (request, response, next) => {
-    console.log("Returning to homepage");
     response.redirect("/");
 });
 router.get("/login/google", 
@@ -39,33 +38,25 @@ router.get("/google/callback",
 );
 
 const checkAuthentication = (request, response, next) => {
-    if (!response.result) {
+    if (request.isAuthenticated()) {
         return next();
-    } else if (response.ok && !request.isAuthenticated()) {
-        response.json("WARNING: USER IS NOT AUTHENTICATED").redirect(403, "/unauthenticated")
     }
-}
+    return response.status(403).redirect("/auth/unauthenticated");
+};
 
 router.get("/admin", checkAuthentication, (request, response, next) => {
-    console.log("Passed Admin Route, Assessing user authentication..");
-    try {
-        if(localLogin.call(response.result)) {
-            function auth() {
-                console.log("Auth Successful in admin console")
-                console.log("Redirecting to webmaster route - http//:localhost3000/auth/admin/auth-console")
-                response.json("Authenticated via route").redirect("/auth-console")
-            }
-            auth()
-        }
-    } catch (error) {
-        response.redirect("/unauthenticated")
-    }
+    const userCopy = request.user.toObject();
+    delete userCopy.password;
+    return response.status(200).json({
+        success: { message: "Welcome to the admin console." },
+        data: { user: userCopy },
+        statusCode: 200,
+    });
 });
-router.get("/admin/auth-console", (request, response, next) => {
-    response.json("The user is authenticated within the auth console.")
+router.get("/admin/auth-console", checkAuthentication, (request, response, next) => {
+    return response.status(200).json({ message: "The user is authenticated within the auth console." });
 });
 router.get("/admin/unauthenticated", (request, response, next) => {
-    console.log("Returning to homepage..")
-    response.redirect("/")
+    response.redirect("/");
 });
 module.exports = router;

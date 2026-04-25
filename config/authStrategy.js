@@ -8,12 +8,12 @@ passport.use(
   new LocalStrategy(async (username, password, done) => {
     try {
       const user = await User.findOne({ username });
-      //Error Handling for user
+      //No user found means the username doesn't exist in the database
       if (!user) {
         return done(null, false, { message: "Incorrect name." });
       }
       const result = await bcrypt.compare(password, user.password);
-      //Error handling for password
+      //bcrypt.compare returns false if the plain text password doesn't match the stored hash
       if (!result) {
         return done(null, false, { message: "Incorrect password." });
       }
@@ -38,16 +38,16 @@ passport.use(
         if (user) {
           return done(null, user);
         } else {
+          const email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
           const newUser = new User({
             firstName: profile.name.givenName,
             lastName: profile.name.familyName,
-            username: profile.emails[0].value,
+            username: email,
             googleId: profile.id,
           });
+          await newUser.save();
+          return done(null, newUser);
         }
-        await newUser.save();
-
-        return done(null, newUser);
       } catch (error) {
         return done(error, false);
       }

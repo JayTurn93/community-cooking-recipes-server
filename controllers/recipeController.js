@@ -1,9 +1,7 @@
-// const recipeData = require("../data/recipes");
 const Recipe = require("../models/recipeModel");
 
 const getAllRecipes = async (request, response, next) => {
   try {
-    // const recipes = recipeData;
     const recipes = await Recipe.find({});
     return response.status(200).json({
       success: { message: "This route shows all the recipes." },
@@ -18,13 +16,12 @@ const getRecipe = async (request, response, next) => {
   const { _id } = request.params;
 
   try {
-    // const foundRecipe = recipeData.find((recipe) => recipe.id === id);
-    if (!_id) {
-      throw new Error("ID required.");
-    }
     const recipe = await Recipe.findById(_id);
     if (!recipe) {
-      throw new Error("Recipe not found");
+      return response.status(404).json({
+        error: { message: "Recipe not found." },
+        statusCode: 404,
+      });
     }
     return response.status(200).json({
       success: { message: "Found recipe by ID" },
@@ -41,7 +38,10 @@ const createRecipe = async (request, response, next) => {
 
   try {
     if (!name || !prepTime || !cookTime || !ingredients || !instructions) {
-      throw new Error("Please enter missing fields.");
+      return response.status(400).json({
+        error: { message: "Please enter missing fields." },
+        statusCode: 400,
+      });
     }
     const newRecipe = new Recipe({
       name,
@@ -69,7 +69,10 @@ const updateRecipe = async (request, response, next) => {
 
   try {
     if (!name || !prepTime || !cookTime || !ingredients || !instructions) {
-      throw new Error("Please enter the missing fields.");
+      return response.status(400).json({
+        error: { message: "Please enter the missing fields." },
+        statusCode: 400,
+      });
     }
     const updatedRecipe = await Recipe.findByIdAndUpdate(
       _id,
@@ -85,16 +88,16 @@ const updateRecipe = async (request, response, next) => {
       },
       { new: true }
     );
-    if (!upatedRecipe) {
+    if (!updatedRecipe) {
       throw new Error("Recipe not updated.");
     }
 
-    return response.status(201).json({
-      success: { message: "Updated recipe successsfully" },
+    return response.status(200).json({
+      success: { message: "Updated recipe successfully" },
       data: { updatedRecipe },
     });
   } catch (error) {
-    return new error();
+    return next(error);
   }
 };
 
@@ -102,11 +105,14 @@ const deleteRecipe = async (request, response, next) => {
   const { _id } = request.params;
 
   try {
-    if (!_id) {
-      throw new Error("ID required.");
-    }
-    // const recipe = recipeData.filter((recipe) => recipe.id !== id)
     const recipe = await Recipe.findByIdAndDelete(_id);
+
+    if (!recipe) {
+      return response.status(404).json({
+        error: { message: "Recipe not found." },
+        statusCode: 404,
+      });
+    }
 
     return response.status(200).json({
       success: { message: "The recipe has been chopped." },

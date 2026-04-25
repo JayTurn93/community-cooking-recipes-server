@@ -29,7 +29,7 @@ app.use(
     secret: process.env.SECRET_KEY,
     cookie: {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       maxAge: 1000 * 60 * 60 * 24,
     },
   })
@@ -45,7 +45,7 @@ app.use((error, request, response, next) => {
   const authErrorStatus = error.status || 400;
   const serverErrorStatus = error.status || 500;
   if (condition) {
-    return response.statuse(authErrorStatus).json({
+    return response.status(authErrorStatus).json({
       error: { message: "Already have an account? Try logging in." },
       statusCode: authErrorStatus,
     });
@@ -53,7 +53,7 @@ app.use((error, request, response, next) => {
   return response
     .status(serverErrorStatus)
     .json({
-      error: { messsge: error.message || "Internal server error." },
+      error: { message: error.message || "Internal server error." },
       statusCode: serverErrorStatus,
     });
 });

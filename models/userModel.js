@@ -16,17 +16,19 @@ const userSchema = new Schema({
     required: true,
     trim: true,
     lowercase: true,
+    unique: true,
   },
   password: {
     type: String,
-    required: true,
     minLength: 8,
   },
   googleId: {
     type: String,
+    unique: true,
+    sparse: true,
   },
- 
-});
+
+}, { timestamps: true });
 
 const User = mongoose.model("User", userSchema);
 

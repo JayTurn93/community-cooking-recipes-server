@@ -1,10 +1,9 @@
-const { request, response } = require("express");
 const passport = require("passport");
 const bcrypt = require("bcrypt");
 const User = require("../models/userModel");
 
 const register = async (request, response, next) => {
-  const { firstName, lastName, username, password, googleId } = request.body;
+  const { firstName, lastName, username, password } = request.body;
   if (!firstName || !username || !password) {
     return response.status(400).json({
       error: { message: "Missing required fields." },
@@ -18,7 +17,6 @@ const register = async (request, response, next) => {
       lastName: lastName,
       username: username,
       password: hashedPassword,
-      googleId: googleId,
     });
 
     await newUser.save();
@@ -42,8 +40,12 @@ const register = async (request, response, next) => {
 };
 
 const login = async (request, response, next) => {
+  const userCopy = request.user.toObject();
+  delete userCopy.password;
   response.status(200).json({
     success: { message: "User logged in." },
+    data: { user: userCopy },
+    statusCode: 200,
   });
 };
 
@@ -61,15 +63,15 @@ const localLogin = async (request, response, next) => {
       if (error) {
         return next(error);
       }
-      const userCopy = { ...request.user._doc };
-      userCopy.password = undefined;
+      const userCopy = request.user.toObject();
+      delete userCopy.password;
       response.status(200).json({
         success: { message: "Local Login Served!" },
         data: { user: userCopy },
         statusCode: 200,
       });
     });
-  });
+  })(request, response, next);
 };
 
 const logout = async (request, response, next) => {
@@ -81,11 +83,11 @@ const logout = async (request, response, next) => {
       if (error) {
         return next(error);
       }
-    });
-    response.clearCookie("connect.sid");
-    return response.status(200).json({
-      success: { message: "User logged out!" },
-      statusCode: 200,
+      response.clearCookie("connect.sid");
+      return response.status(200).json({
+        success: { message: "User logged out!" },
+        statusCode: 200,
+      });
     });
   });
 };
