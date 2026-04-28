@@ -2,7 +2,6 @@ const express = require("express");
 const passport = require("passport");
 
 const router = express.Router();
-
 const { login, localLogin, logout, register } = require("../controllers/authController");
 
 router.get("/", (request, response, next) => {
